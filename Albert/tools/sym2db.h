@@ -10,7 +10,6 @@
 #ifndef SYM2DB_H
 #define SYM2DB_H
 
+#include "Albert.h"
+
 #endif
-
-
-

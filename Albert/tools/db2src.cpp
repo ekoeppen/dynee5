@@ -18,9 +18,9 @@
 #else
 #define VERB1
 #define VERB2
-#define VERB3 if (0) 
-#define VERB4 if (0) 
-#define VERB5 if (0) 
+#define VERB3 if (0)
+#define VERB4 if (0)
+#define VERB5 if (0)
 #endif
 
 #if 1
@@ -41,6 +41,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <map>
+#include <stdarg.h>
 
 #define BDISP(x) ((((x) & 0xffffff) ^ 0x800000) - 0x800000) /* 26 bit */
 
@@ -57,9 +58,9 @@ char filename_buffer[2048] = { 0 };
 //const char *db_path = "./";
 const char *db_path = ""; // base_path
 const char *src_path = "src/";
-const char *c_path = "src/"; 
-const char *cpp_path = "src/"; 
-const char *os_path = "NewtonOS/"; 
+const char *c_path = "src/";
+const char *cpp_path = "src/";
+const char *os_path = "NewtonOS/";
 
 
 const char *type_lut[] = {
@@ -92,8 +93,8 @@ AlROMComment ROMComment;
 
 unsigned char printable(unsigned char c) { return (c>32&&c<127)?c:'.'; }
 
-const char *p_ascii(unsigned char c) 
-{ 
+const char *p_ascii(unsigned char c)
+{
   static char buf[8];
   switch (c) {
     case    8: return "\\b";
@@ -135,7 +136,7 @@ void AsmFlush(FILE *f, const char *buf)
   // or at column 48 if possible
   const char *s = buf;
   char *d = dbuf;
-  int col=0, t=0, x=0; 
+  int col=0, t=0, x=0;
   // walk to the comment character
   for (;;) {
     char c = *s;
@@ -165,7 +166,7 @@ void AsmFlush(FILE *f, const char *buf)
   fputs(dbuf, f);
 }
 
-void AsmPrintf(FILE *f, const char *pat, ...) 
+void AsmPrintf(FILE *f, const char *pat, ...)
 {
   static char buf[4096];
   static char *dst = buf;
@@ -469,7 +470,7 @@ void addComment(const char *s)
     strcpy(gComment+gnComment+1, s);
   } else {
     strcpy(gComment, s);
-  }    
+  }
   gnComment = strlen(gComment);
 }
 
@@ -479,7 +480,7 @@ void clearComment()
   gnComment = 0;
 }
 
-char hasComment() 
+char hasComment()
 {
   return (gComment && *gComment);
 }
@@ -575,7 +576,7 @@ public:
   }
   void write_h(FILE *f) {
     // write the doxygen commentary
-    if (pComment) {    
+    if (pComment) {
       fprintf(f, "\n/**\n");
       printComment(f, pComment, " * ");
       fprintf(f, " *\n");
@@ -613,12 +614,12 @@ public:
   }
   static void write_all_h(FILE *f) {
     int i;
-    for (i=0; i<pn; i++) 
+    for (i=0; i<pn; i++)
       pCString[i]->write_h(f);
   }
   static void write_all_c(FILE *f) {
     int i;
-    for (i=0; i<pn; i++) 
+    for (i=0; i<pn; i++)
       pCString[i]->write_c(f);
   }
 };
@@ -669,7 +670,7 @@ public:
         sscanf(s, "%s %s", cmd, arg);
         if (strcmp(arg, "FIXME")!=0) {
           if (ac) ac->base_class(arg);
-        }        
+        }
       } else if (strcmp(cmd, "size")==0) {
       } else if (strcmp(cmd, "datac")==0) {
       } else if (strcmp(cmd, "data")==0) {
@@ -718,7 +719,7 @@ AlClass **AlClass::pClass;
 int AlClass::pn, AlClass::pN;
 
 
-class AlArg 
+class AlArg
 {
 public:
   const char *pType;
@@ -736,7 +737,7 @@ public:
     if (sym && sym[1]!='/') { *sym = 0; sym++; }
     if (type) pType = strdup(type);
     if (sym) pSym = strdup(sym);
-    if (cmt) 
+    if (cmt)
       pComment = strdup(cmt);
     else
       pComment = dupComment();
@@ -901,7 +902,7 @@ public:
     //   any register r can be used, other logical shifts have been used
     //   "add" is followed by a "nop" because the ip is already one instruction further down
     //   "addls" is followed by a jump to the "default" branch
-    
+
     // find all "b" instructions and tag the branch destinations
     for (i=pAt; i<pNext; i+=4) {
       unsigned int cmd = rom_w(i);
@@ -912,7 +913,7 @@ public:
     // write some simple C-style code (of course it is not real C code)
     for (i=pAt; i<pNext; i+=4) {
       char buf[4096];
-      if (rom_flags(i)&1) 
+      if (rom_flags(i)&1)
         fprintf(f, "L%08X:\n", i);
       disarm_c(buf, i, rom_w(i));
       fprintf(f, "  %s\n", buf);
@@ -1014,7 +1015,7 @@ void load_db(char const *path, char const *filename)
         goto skip; // FIXME:
       } else {
         // skip to "end"
-        // FIXME 
+        // FIXME
         printf("WARNING: unsupported class '%s'\n", arg);
       skip:
         int depth = 1;
@@ -1075,7 +1076,7 @@ void tagOffset(unsigned int addr, unsigned int cmd, unsigned int flags)
 
 void check_code_coverage(unsigned int addr, unsigned int flags=0);
 
-void check_switch_case(unsigned int addr, int n_case) 
+void check_switch_case(unsigned int addr, int n_case)
 {
   int i;
   printf("Switch/Case statement with %d cases starting at %08X\n", n_case, addr);
@@ -1093,7 +1094,7 @@ void check_code_coverage(unsigned int addr, unsigned int flags)
   if (addr<0x00800000 && flags) rom_flags_set(addr, flags); // mark this as a jump target
 
   for(;;) {
-    
+
     if (addr>=0x00800000) {
       // see: http://40hz.org/Pages/Newton%20Patches
       if (addr>=0x01A00000 && addr<0x1D00000) {
@@ -1114,32 +1115,32 @@ void check_code_coverage(unsigned int addr, unsigned int flags)
         return;
       }
     }
-    
+
     // hmm, this is a dead end!
     if (addr==0x0001862C) return; // FIXME: dead end!
-    
+
     // we verified this address already - leave
     if (rom_flags_type(addr)) return;
-        
+
     // mark this as executable
     rom_flags_type(addr, flags_type_arm_code);
-    
+
     // crude interpretation of commands
     unsigned int cmd = rom_w(addr);
-    
+
     {
       char buf[1024]; memset(buf, 0, 1024);
       sprintf(buf, ":  ");
       disarm(buf+3, addr, cmd);
       VERB4 puts(buf);
     }
-    
+
     if ( (cmd&0xf0000000) == 0xf0000000) {
       // special treatment for 0xf... commands
       VERB1 printf("Aborting: Hit unknown command at %08X: %08X\n", addr, cmd);
       return;
     } else {
-      
+
       // ldr immediate test
       if ( (cmd&0x0e5f0000) == 0x041f0000) { // test for word access inside the ROM
         int offset = cmd & 0xfff;
@@ -1147,7 +1148,7 @@ void check_code_coverage(unsigned int addr, unsigned int flags)
         VERB5 printf("  Read word at 0x%08X\n", addr+8+offset);
         rom_flags_type(addr+8+offset, flags_type_arm_word);
       }
-      
+
       // follow execution threads
       if ( (cmd&0x0fefffff)==0x01a0f00e) { // quick return command (mov pc,lr)
         if ( (cmd&0xf0000000)==0xe0000000) return; // unconditional - we are done, otherwise continue
@@ -1162,7 +1163,7 @@ void check_code_coverage(unsigned int addr, unsigned int flags)
           VERB3 printf("%08X: conditional jump to %08X, follow later\n", addr, next);
           check_code_coverage(addr+4, 0);
           VERB3 printf("%08X: following up on conditional jump to %08X\n", addr, next);
-          addr = next; 
+          addr = next;
           rom_flags_set(addr, flags_is_target);
           continue;
         }
@@ -1219,7 +1220,7 @@ void check_code_coverage(unsigned int addr, unsigned int flags)
           } else {
             addr += 4; continue;
           }
-        }          
+        }
       } else if ( (cmd&0x0f000000) == 0x0e000000) { // mcr, mrc (FIXME: probably not changing pc)
       } else if ( (cmd&0x0e000010) == 0x06000010) { // unknown (used to trigger interrupt, FIXME: and then?)
         int i;
@@ -1372,12 +1373,12 @@ void check_all_code_coverage()
   // ROMPublicJumpTable
   for (i=0x00013000; i<0x00015e0c; i+=4 ) {
     check_code_coverage(i, flags_is_function);
-  }  
+  }
   // some jump vector table we found. These jumps all go into the ROM patch table
   for (i=0x0001a618; i<0x00021438; i+=4 ) {
     check_code_coverage(i, 0);
-  }  
-  // some places that are not reached via static analysis  
+  }
+  // some places that are not reached via static analysis
 #include "manual_checks.h"
 }
 
@@ -1387,14 +1388,14 @@ void check_all_code_coverage()
    num_entries
    pointer to entry[0]  NSRef: Pointer
    ...
- 
+
  67.fa40: Binary Objects
  71.fc4c: ROM code end, beginning of REX (ROM Extension, may contain code)
  */
 
 unsigned int check_ns_obj(unsigned int addr);
 
-void ns_print_binary(unsigned int addr, unsigned int size) 
+void ns_print_binary(unsigned int addr, unsigned int size)
 {
   int i;
   switch (rom_w(addr+8)) {
@@ -1450,7 +1451,7 @@ unsigned int check_ns_obj(unsigned int addr)
 {
   unsigned int val = rom_w(addr);
   unsigned int flags = rom_w(addr+4);
-  
+
   if ( (val&0x0000007c) != 0x00000040 || flags!=0 ) {
     VERB1 printf("int: not an NS object at %08X: %08X\n", addr, val);
     ABORT_SCAN_0;
@@ -1460,7 +1461,7 @@ unsigned int check_ns_obj(unsigned int addr)
   rom_flags_type(addr, flags_type_ns_obj);
   rom_flags_type(addr+4, flags_type_ns);
   rom_flags_set(addr, flags_is_target);
-                   
+
   // follow the members of the object
   if ( (val&0x00000003) == 0x00000000 ) {
     // binary object
@@ -1501,20 +1502,20 @@ void check_all_ns_coverage()
 {
   int i;
   // 0x0068068C
-  
+
   // array of asm/NS pointers. Why are they ordered like this?
-  // these are always two words: 
+  // these are always two words:
   //   the first word, Rlabel, is a NSRef
   //   the second word, RSlabel, is always an asm pointer to the previous word
   for (i=0x0067fa44; i<0x00681c9c; i+=8) {
     check_ns_ref(i);
-  } 
+  }
   // simple pointers, but what are they used for?
   for (i=0x00681c9c; i<0x006853dc; i+=8) {
     check_ns_ref(i);
   }
 
-  int n_magic = rom_w(0x003af000);  
+  int n_magic = rom_w(0x003af000);
   for (i=0; i<n_magic; i++) {
     check_ns_ref(0x003af004+4*i, 0);
   }
@@ -1528,14 +1529,14 @@ void check_all_ns_coverage()
       ABORT_SCAN;
     }
   }
-  
+
 }
 
 // Dictionaries starting at 0x006853DC (InitROMDictionaryData)
 
 
 void writeNewtonROMTexts()
-{  
+{
   printf("\n====> Writing all Newton ROM ASCII text entries\n\n");
   unsigned int i;
   strcpy(filename_buffer, base_path);
@@ -1559,10 +1560,10 @@ void writeNewtonROMTexts()
           } else if (c<' ') {
             fprintf(text, "\\%c", c+96); // FIXME: lookup table needed
           } else if (c>=127) {
-            fprintf(text, "\\x%2x", c);            
+            fprintf(text, "\\x%2x", c);
           } else {
             fputc(c, text);
-          }        
+          }
         }
       }
     }
@@ -1574,7 +1575,7 @@ char hasLabel(unsigned int i)
 {
   if (rom_flags_is_set(i, flags_is_target)) {
     return 1;
-  }  
+  }
   if (get_plain_symbol_at(i)) {
     return 1;
   }
@@ -1650,7 +1651,7 @@ const char *getLabelAlways(unsigned int i)
   static char buf[32];
   const char *sym = get_symbol_at(i);
   if (sym) return sym;
-  
+
   const char *psym = get_plain_symbol_at(i);
   if (psym) return psym;
 
@@ -1751,10 +1752,10 @@ void writeNewtonROM()
   if (!newt) {
     perror("Can't write NewtonOS!");
   } else {
-    
+
     rom_flags_type(0x003AE204, flags_type_arm_word); // will create illegal instructions!
     rom_flags_type(0x003AE20C, flags_type_arm_word);
-    
+
     unsigned int n_unused = 0, unused_filler = 0;
     fprintf(newt, "\n\t.include\t\"macros.s\"\n\n\t.text\n\t.org\t0\n\n");
     fprintf(newt, "\t.global\t_start\n_start:\n");
@@ -1863,7 +1864,7 @@ void writeNewtonROM()
       }
       it.incr();
     }
-    
+
     fprintf(newt, "\n\t.end\n\n");
     fclose(newt);
   }
@@ -1881,10 +1882,10 @@ void writeNewtonROM_C()
   if (!newt) {
     perror("Can't write NewtonOS!");
   } else {
-    
+
     rom_flags_type(0x003AE204, flags_type_arm_word); // will create illegal instructions!
     rom_flags_type(0x003AE20C, flags_type_arm_word);
-    
+
     unsigned int n_unused = 0, unused_filler = 0;
     char isFunction = 0, wasFunction = 0;
     for (i=0; i<0x00800000; i+=4) {
@@ -1992,7 +1993,7 @@ void writeNewtonROM_C()
       }
       it.incr();
     }
-    
+
     fprintf(newt, "\n\t.end\n\n");
     fclose(newt);
   }
@@ -2016,10 +2017,10 @@ void writeNewtonPseudoC()
   if (!newt) {
     perror("Can't write NewtonOS!");
   } else {
-    
+
     rom_flags_type(0x003AE204, flags_type_arm_word); // will create illegal instructions!
     rom_flags_type(0x003AE20C, flags_type_arm_word);
-    
+
     AlData *fn = 0;
     unsigned int n_unused = 0, unused_filler = 0;
 //    fprintf(newt, "//\n// Auto Generated by Albert\n//\n\n");
@@ -2057,10 +2058,10 @@ void writeNewtonPseudoC()
           char *cmt = strchr(buf, ';');
           if (cmt) *cmt = '@';
           AsmPrintf(newt, "//\t%s\n", buf);
-          
+
           disarm_c(buf, i, rom_w(i));
           AsmPrintf(newt, "%s\n", buf);
-          
+
           break; }
         case flags_type_arm_text: {
           int n = 0;
@@ -2170,11 +2171,11 @@ void analyse_Sizeof(const char *name, unsigned int addr, const char *sym) {
 
 void analyse_ClassInfo(const char *name, unsigned int addr, const char *sym) {
   // start of Class Info struct:
-  //  sub     r0, pc, #68                     @ 0x00382C4C 0xE24F0044 - .O.D 
+  //  sub     r0, pc, #68                     @ 0x00382C4C 0xE24F0044 - .O.D
   // word 1: 0
   // word 2: offset from here to classname
   // word 3: offset from here to superclass name
-  // word 4: offset ?? 
+  // word 4: offset ??
   // word 5: offset ??
   // call to Sizeof()
 }
@@ -2186,7 +2187,7 @@ void analyse_ctor(const char *name, unsigned int addr, const char *sym) {
     unsigned int cmd = rom_w(addr+i);
     if ((cmd & 0xff000000) == 0xeb000000) { // it is a funciton call
       unsigned int dst = branch_address(addr+i, cmd);
-      if (dst==0x01BCE738) { 
+      if (dst==0x01BCE738) {
         printf("    operator new\n");
         char err;
         unsigned int r0 = get_r0(addr+i-4, &err);
@@ -2273,7 +2274,7 @@ void analyse_all_classes() {
       char *name = strdup(sym);
       name[dd-sym] = 0;
       for (i=0; i<n; i++) {
-        if (strcmp(name, prev_class[i])==0) 
+        if (strcmp(name, prev_class[i])==0)
           break;
       }
       if (i==n) {
@@ -2311,7 +2312,7 @@ void find_virtual_methods() {
 void writeRexBlock(FILE *f, unsigned int addr, unsigned int length) {
 
   if (length>1024) length = 1024; // FIXME
-  
+
   for ( ; length>0; length-=4, addr+=4) {
     char buf[4096];
     memset(buf, 255, 0);
@@ -2354,11 +2355,11 @@ void writeRExConfigEntry(FILE *f, unsigned int addr) {
 }
 
 
-void writeREx(const char *filename, unsigned int addr) 
+void writeREx(const char *filename, unsigned int addr)
 {
   FILE *f = fopen(filename, "wb");
   if (!f) return;
-  
+
   if (::strncmp((char*)(ROM+addr), "RExBlock", 8)!=0) {
     printf("ERROR: no REx at this address.\n");
     fclose(f);
@@ -2378,7 +2379,7 @@ void writeREx(const char *filename, unsigned int addr)
   for (iCfg = 0; iCfg<numConfigEntries; iCfg++) {
     writeRExConfigBlock(f, addr+40+iCfg*12);
   }
-  
+
   fclose(f);
 }
 
@@ -2388,7 +2389,7 @@ void analyzePerfFile()
   unsigned int i, addr;
   unsigned long long hits, fnHits = 0;
   char buf[4096];
-  
+
   AlData *fn = 0, *nextFn = 0;
 
   strcpy(filename_buffer, base_path);
@@ -2469,16 +2470,16 @@ void writePseudoC()
 {
   printf("\n====> Writing Newton ROM in pseudo C++ code (C++ methods only)\n\n");
   AlClass::write_all(cpp_path);
-  
+
   FILE *f;
-  
+
   strcpy(filename_buffer, base_path);
   strcat(filename_buffer, "src/strings.h");
   f = fopen(filename_buffer, "wb");
   // FIXME: add headers
   AlCString::write_all_h(f);
   fclose(f);
-  
+
   strcpy(filename_buffer, base_path);
   strcat(filename_buffer, "src/strings.c");
   f = fopen(filename_buffer, "wb");
@@ -2568,7 +2569,7 @@ void readROMAndSymbols()
   strcpy(filename_buffer, base_path);
   strcat(filename_buffer, "../");
   chdir(filename_buffer);
-  
+
   strcpy(filename_buffer, base_path);
   strcat(filename_buffer, "data/717006");
   FILE *rom = fopen(filename_buffer, "rb");
@@ -2579,7 +2580,7 @@ void readROMAndSymbols()
   }
   fread(ROM, 0x00800000, 1, rom);
   fclose(rom);
-  
+
   strcpy(filename_buffer, base_path);
   strcat(filename_buffer, "data/717006.cppsymbols.txt");
   char buf2[2048];
@@ -2672,7 +2673,7 @@ void findBitmaps()
       printf("<data type=\"unknown\" start=\"0x%08X\" end=\"0x%08X\" />\n",
              prev, i);
       prev = i+size;
-      
+
       printf("<include.bitmap label=\"L%08X\" top=%d left=%d sym=\"0x%08X\" start=\"0x%08X\" end=\"0x%08X\" />\n",
              i, rom_s(i+20), rom_s(i+22), rom_w(i+8)-1, i, i+size);
 //      writeBitmap(i);
@@ -2708,8 +2709,8 @@ int main(int argc, char **argv)
   end = strrchr(base_path, '/');
   end[0] = '/';
   end[1] = 0;
-  
-  
+
+
   readROMAndSymbols(); // this must always be enabled
 
 #if 0
@@ -2723,7 +2724,7 @@ int main(int argc, char **argv)
 #else
   readFlags();
 #endif
-  
+
   loadDatabase();
 
 #if 1
@@ -2733,16 +2734,16 @@ int main(int argc, char **argv)
 #if 1
   checkScriptCoverage();
 #endif
-  
+
 #if 0
   writePseudoC();
 #endif
-  
+
 #if 0
 //  writeBinaryROMMap();
   writeBinaryROMMapForC();
 #endif
-  
+
 
 #if 0
   writeRGBROMMap();
@@ -2751,35 +2752,35 @@ int main(int argc, char **argv)
 #if 0
   writeNewtonROMTexts();
 #endif
-  
+
 #if 1
   writeNewtonROM();
 #endif
-  
+
 #if 0
   writeNewtonROM_C();
 #endif
-  
+
 #if 0
   writeNewtonROMGlobals();
 #endif
-  
+
 #if 0
   writeNorcroftROM();
 #endif
-  
+
 #if 0
   writeNewtonPseudoC();
 #endif
-  
+
 #if 0
   extractStencils();
 #endif
-  
+
 #if 0
   writeROMFlags();
 #endif
-    
+
 #if 0
   {
     strcpy(filename_buffer, base_path);
@@ -2789,28 +2790,28 @@ int main(int argc, char **argv)
     fclose(f);
   }
 #endif
-  
+
 #if 0
   //analyse_class("CItemComparer");
   analyse_all_classes();
 #endif
-  
+
 #if 0
   find_virtual_methods();
 #endif
-  
+
 #if 1
   strcpy(filename_buffer, base_path);
   strcat(filename_buffer, "NewtonOS/apple.rex.s");
   writeREx(filename_buffer, 0x0071FC4C);
 #endif
-  
+
 #if 0
   createCallGraphInformation();
   writeCallsPerFunction();
   writeNumUniqueCallsPerFunction();
 #endif
-  
+
 #if 0
   strcpy(filename_buffer, base_path);
   strcat(filename_buffer, "DataAbortHandler.graph");
@@ -2818,20 +2819,20 @@ int main(int argc, char **argv)
   writeCallGraph(f, 0x00393114, 9999);
   fclose(f);
 #endif
-  
+
 #if 0
   listAllEntryPoints();
   listAllEndPoints();
-#endif 
-  
+#endif
+
 #if 0
   analyzePerfFile();
 #endif
-  
+
 #if 0
   findBitmaps();
 #endif
-  
+
   return 0;
 }
 #endif
@@ -2882,7 +2883,7 @@ void pathToMakeVar(char *buf, char *path, char appendix=0)
 int fillType(const char **srcp, char *dst, const char *sym)
 {
   static int depth = 0;
-  
+
   int len, rpt, idx;
   char pre[1024], post[1024];
   pre[0] = 0; post[0] = 0;
@@ -3121,7 +3122,7 @@ char *decodeCppSymbol(const char *sym) {
 :map <f4> 0df;xi  check_code_coverage(<esc>11li); // <esc>j0
 :map <f5> ma0k12lywj$p0df;xi  rom_flags_type(<esc>11li, , flags_type_data); // <esc>j0/:<cr>
 :map <f6> kmbjjf;llyw'af,lpj0V'bd/unknown<cr>
- 
+
 // serach for /\.word\t0xE and press F1 if it is a function. Command will be added to end of file.
 :map <f1> 21l10ylmaGA<cr>check_code_coverage(<esc>pA);<esc>'a
 */
@@ -3152,7 +3153,7 @@ char *decodeCppSymbol(const char *sym) {
 
 // So 13 feb 2011, 21:10: 731,205 unknown words, 209,643 of those are in the REX
 //                 22:04: 719,163 unknown words: ASCII text concatenating
-// Mo 14 feb 2011, 01:52: 689,304 unknown words: Unicode text 
+// Mo 14 feb 2011, 01:52: 689,304 unknown words: Unicode text
 //                 02:32: 682,173 unknown words: Newton Script native function calls
 //                 02:54: 681,763 unknown words: Newton Script unichar encoding
 //                 17:45: 681,623 unknown words: Newton Script real encoding
@@ -3164,7 +3165,7 @@ char *decodeCppSymbol(const char *sym) {
 // there are a few "funny" .fill instructions at the end of the ROM
 
 /*
- 
+
  //writeCallGraph("/Users/matt/dev/Albert/callgraph.dot", 0x000466CC CBufferList::DeleteLast(void) , 8 );
 //writeCallGraph("/Users/matt/dev/Albert/callgraph.dot", 0x0004590C, 8 );
 //writeCallGraph("/Users/matt/dev/Albert/callgraph.dot", 0, 6);
@@ -3183,18 +3184,18 @@ ROM analyser:
  6: pseudo C++ code in guter Dateistruktur (kompilierbar!)
  7: Erkennen von Loops und Conditions
  8: Umwandlung von stack und regsiter spaces in lokale variabeln.
- 
+
  Die bekannten Includes müssen analysiert werden und eine Type-Datenbank erstellen
  Eine ROM-Datenbank zeigt zu bekannten ROM bereichen (z.B. Magics)
  Eine Cross-Reference zwischen bekannten Labels und ROM wird erstellt.
- 
+
  Alle words im ROM werden nacheinander analysiert, bis wir keine neue Information finden
  Jede Iteration kann in eine weitere Datenbank geschrieben werden, die dann später
  wieder hergestellt werden kann, um an dieser Stelle weiterzuarbeiten.
- 
+
  Anlegen mehrerer Ausgabeformate: Machine code (funktioniert bereits!), Bilder,
  Texte, Audio, pseudo C/C++ mit Doxygen Tags (Verzeichnis- und Dateiliste für alle Daten!)
- 
+
   1: AlAddress -> what's happening at a specific space in memory (address, value)
        AlARMCode -> something that will be run by the CPU (hasLabel, isEntryPoint, isExitPoint, etc. etc.)
        AlARMData -> data that is inside a function
@@ -3203,18 +3204,18 @@ ROM analyser:
   3: AlType -> what type is this (symbol)
        AlAtomicType -> integer, float, ID's, char, fixed, etc.
        AlComplexType -> Structs and classes
- 
- 
+
+
  ---
- 
+
  Alle includes sind hier:
  "/Users/matt/Desktop/ALLES AUFRÄUMEN/Newton/Newton Mix/Newton/NewtonDev/C++/NCT_Projects"
 
  ---
- 
+
  We need a database, files that can be edited, and that update the database, and then generate a compilable setup, using the ROM
- 
- 
+
+
  <?xml version="1.0"?>
  <dir name=ROM>
    <file name=all.s type=ARM>
@@ -3225,7 +3226,7 @@ ROM analyser:
  </dir>
  <dir name=REx>
  </dir>
- 
+
  <?xml version="1.0"?>
  <dir name=ROM>
  <file name=all.s type=ARM>
@@ -3237,29 +3238,29 @@ ROM analyser:
  <dir name=REx>
  </dir>
 
- 
+
  http://www.unna.org/unna/development/Debugger_Images/MP2x00_US.sit
- 
+
 
  ./getROM
  bin/db2src 717006.debug newtonos.xml
  bin/gmake
 
- 
- 
+
+
  */
 
 /*
  Inline database:
- 
- Create a databse inside the source code. As the code evolves, the database is 
+
+ Create a databse inside the source code. As the code evolves, the database is
  dragged along, helping to decompilation effort.
- 
- Start condition: 
+
+ Start condition:
   * original files, usually in banary format
   * helper files, headers, code snippets, documentation
   * a Makefile
- 
+
  Goal:
   * 'make source' will generate a source tree from its own database
   * 'make clean; make' will regenerate files identical to the originals
@@ -3268,7 +3269,7 @@ ROM analyser:
      original
   * 'make update' grabs all changes from the main repository
   * 'make commit' sends updates (it implies 'make distclean')
- 
+
  Requirements:
   * incrmental process, no duplicate work needed
   * all source code files are ASCII and contain the databse as well
@@ -3276,22 +3277,22 @@ ROM analyser:
   * everything can be checked in and out of a source code repository (svn, git)
   * original tools should be used, but new tools can be generated as needed
     'make tools' should be able to generate all tools from scratch
- 
+
  Solution:
   * the database is integrated into all source code and helper files
-  * the database contains commands and options, for example: 
+  * the database contains commands and options, for example:
       apply spilt file="hello.c"
-  * db commands can be put anywhere into comments of the particular file type 
+  * db commands can be put anywhere into comments of the particular file type
     in square brackets:
       .cpp   // [[data size=32 type=long]]
       .S     ; [[apply split file="Hello.cpp"]]
-  * the db command [[*]] delimits copyrighted material: everything from the 
-    beginning of the line to this point - except for the comment marker - will 
+  * the db command [[*]] delimits copyrighted material: everything from the
+    beginning of the line to this point - except for the comment marker - will
     be deleted for distclean
       .cpp    x = 1234;  // [[secret info on 123]] [[*]] [[public infor on 123]]
   * the [[@1234]] syntax refers to some useful label in the original file. The
     tools determine how a useful label is constructed
- 
+
  Process:
   * 'make apply' finds [[apply... sequences in any of the source codes, helpers,
      or Makefiles. The command following the 'apply' command is then executed.
@@ -3299,7 +3300,7 @@ ROM analyser:
   * 'make source' then find all changed files and recreates the autogenerated
      code portion, leaving the database portion intact
   * 'make' runs every tool needed to create a copy of the original
- 
+
  Details:
   * start in a new directory, set the path to the existing binary tool set
   * add the '_original_' directory, containing the original code file
@@ -3307,23 +3308,23 @@ ROM analyser:
   * add the '_tools_' directory and subdirs for every specialized tool
   * add the '_docs_' and '_rsrc_' directory for further information about the environment
   * add a Makefile. The first command is probably something like # [[apply create file='all.s' type=asm cpu=arm from='_original_/ROM.bin]]
- 
+
  Ideas for commands:
- 
+
  [*] : generated and possibly copyrighted code. Will be cleared on 'make distclean' and regenerated during 'make src'
  [@1234] : this and all following commands refer to this address - usually the byte position within the original file
  [set variable=value] : sets an environment variable
  [apply cmd arg=value ...] : during 'make apply', run the given shell command
 
- [file name=test.c path=my/path start=123 end=456 format=c] : 
+ [file name=test.c path=my/path start=123 end=456 format=c] :
  [code size=4 cpu=arm] :
  [data size=4 type=long value=123] :
- 
+
  [push variable=value] [pop variable] : store, change and recall a variable
- 
+
 
  Example:
- 
+
  @ [set cpu=arm]
  @ [@0005266C]
  @ [method class=TCardServer name=DoPollLockSwitchAndCardDetected \
@@ -3331,7 +3332,7 @@ ROM analyser:
     type1="unsigned long" \
     returntype="NewtErr" ]
     mov     r12, sp         @ [*]
- 
+
     add   sp, sp, #12       @ [*] remove local variables [@00052904][code][data type=int value=12]
     b     L0005292C         @ [*][@00052908][code][data type=ptr value=L0005292C]
  L0005290C:                 @ [*][@0005290C][label]

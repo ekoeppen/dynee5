@@ -1,5 +1,5 @@
 
-
+#include <cstring>
 
 #include "AlMemoryMap.h"
 #include "AlData.h"
@@ -54,7 +54,7 @@ bool AlMemoryMap::read(AlDatabase &db)
 void AlMemoryMap::write(AlDatabase &db, bool block)
 {
   if (block) db.writeBlockBegin("MemoryMap");
-  AlDatabaseObject::write(db, false);  
+  AlDatabaseObject::write(db, false);
   for (AlMemoryMapIterator it(*this); !it.end(); it.incr()) {
     it.data()->write(db, true);
   }

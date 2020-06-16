@@ -10,11 +10,11 @@
  */
 
 #include "AlDatabaseObject.h"
-
+#include <cstring>
 #include <map>
 
 class AlType;
-typedef struct 
+typedef struct
 {
   bool operator()(char const *a, char const *b) const
   {
